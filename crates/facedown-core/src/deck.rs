@@ -48,7 +48,12 @@ struct Stream {
 
 impl Stream {
     fn new(seed: [u8; 32]) -> Self {
-        Self { seed, counter: 0, block: [0; 32], pos: 32 }
+        Self {
+            seed,
+            counter: 0,
+            block: [0; 32],
+            pos: 32,
+        }
     }
 
     fn next_u32(&mut self) -> u32 {
@@ -103,7 +108,10 @@ pub struct Layout {
 impl Layout {
     pub fn new(vrf_output: &[u8; 32], salt: &[u8; 32], players: usize) -> Self {
         assert!((2..=10).contains(&players), "2 to 10 players");
-        Self { deck: shuffle(deck_seed(vrf_output, salt)), players }
+        Self {
+            deck: shuffle(deck_seed(vrf_output, salt)),
+            players,
+        }
     }
 
     pub fn hole(&self, position: usize) -> [Card; 2] {
@@ -112,7 +120,13 @@ impl Layout {
 
     pub fn board(&self) -> [Card; 5] {
         let b = 2 * self.players;
-        [self.deck[b], self.deck[b + 1], self.deck[b + 2], self.deck[b + 3], self.deck[b + 4]]
+        [
+            self.deck[b],
+            self.deck[b + 1],
+            self.deck[b + 2],
+            self.deck[b + 3],
+            self.deck[b + 4],
+        ]
     }
 }
 
@@ -128,7 +142,11 @@ mod tests {
         let mut sorted = a;
         sorted.sort();
         assert_eq!(sorted.to_vec(), (0..52).collect::<alloc::vec::Vec<u8>>());
-        assert_ne!(a, shuffle(deck_seed(&[7; 32], &[8; 32])), "a different salt gives a different deck");
+        assert_ne!(
+            a,
+            shuffle(deck_seed(&[7; 32], &[8; 32])),
+            "a different salt gives a different deck"
+        );
     }
 
     #[test]

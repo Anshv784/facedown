@@ -14,7 +14,9 @@ use alloc::vec::Vec;
 use borsh::{BorshDeserialize, BorshSerialize};
 use serde::{Deserialize, Serialize};
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(
+    BorshSerialize, BorshDeserialize, Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq,
+)]
 #[serde(rename_all = "snake_case")]
 pub enum Street {
     Preflop,
@@ -44,14 +46,18 @@ impl Street {
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(
+    BorshSerialize, BorshDeserialize, Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq,
+)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum Action {
     Fold,
     Check,
     Call,
     /// Bet or raise so this street's total bet becomes `to`.
-    Raise { to: u64 },
+    Raise {
+        to: u64,
+    },
     AllIn,
 }
 
@@ -150,7 +156,10 @@ impl Betting {
         let n = stacks.len();
         assert!(n >= 2, "at least two players");
         assert!(button < n, "button out of range");
-        assert!(stacks.iter().all(|&(_, s)| s > 0), "every stack must be positive");
+        assert!(
+            stacks.iter().all(|&(_, s)| s > 0),
+            "every stack must be positive"
+        );
         assert!(small_blind > 0 && big_blind >= small_blind, "bad blinds");
         let players = stacks
             .iter()
@@ -318,7 +327,9 @@ impl Betting {
 
     fn next_to_act_after(&self, i: usize) -> Option<usize> {
         let n = self.players.len();
-        (1..=n).map(|k| (i + k) % n).find(|&j| self.needs_action(&self.players[j]))
+        (1..=n)
+            .map(|k| (i + k) % n)
+            .find(|&j| self.needs_action(&self.players[j]))
     }
 
     fn after_action(&mut self, i: usize) -> Progress {
@@ -339,7 +350,11 @@ impl Betting {
 
     fn street_closed(&self) -> Progress {
         if self.actors() <= 1 {
-            return if self.street == Street::River { Progress::Showdown } else { Progress::RunOut };
+            return if self.street == Street::River {
+                Progress::Showdown
+            } else {
+                Progress::RunOut
+            };
         }
         match self.street.next() {
             Some(street) => Progress::Deal { street },
@@ -363,7 +378,9 @@ impl Betting {
         }
         // Postflop the first player left of the button speaks (heads-up: the big blind).
         self.to_act = self.next_to_act_after(self.button);
-        Progress::ToAct { player: self.to_act.unwrap() }
+        Progress::ToAct {
+            player: self.to_act.unwrap(),
+        }
     }
 
     /// What each player receives. `scores[i]` is the hand score of player `i`
@@ -377,20 +394,34 @@ impl Betting {
             out[w] = self.pot();
             return out;
         }
-        let mut levels: Vec<u64> = self.players.iter().map(|p| p.total).filter(|&t| t > 0).collect();
+        let mut levels: Vec<u64> = self
+            .players
+            .iter()
+            .map(|p| p.total)
+            .filter(|&t| t > 0)
+            .collect();
         levels.sort_unstable();
         levels.dedup();
         let mut prev = 0;
         for level in levels {
-            let amount: u64 = self.players.iter().map(|p| p.total.min(level) - p.total.min(prev)).sum();
+            let amount: u64 = self
+                .players
+                .iter()
+                .map(|p| p.total.min(level) - p.total.min(prev))
+                .sum();
             prev = level;
             if amount == 0 {
                 continue;
             }
-            let eligible: Vec<usize> = (0..n).filter(|&i| self.players[i].live() && self.players[i].total >= level).collect();
+            let eligible: Vec<usize> = (0..n)
+                .filter(|&i| self.players[i].live() && self.players[i].total >= level)
+                .collect();
             // Folded chips above every live stack go to the deepest live player.
             let eligible = if eligible.is_empty() {
-                let best = (0..n).filter(|&i| self.players[i].live()).max_by_key(|&i| self.players[i].total).unwrap();
+                let best = (0..n)
+                    .filter(|&i| self.players[i].live())
+                    .max_by_key(|&i| self.players[i].total)
+                    .unwrap();
                 alloc::vec![best]
             } else {
                 eligible
@@ -420,7 +451,11 @@ mod tests {
     use super::*;
 
     fn table(stacks: &[u64], button: usize) -> Betting {
-        let s: Vec<(u8, u64)> = stacks.iter().enumerate().map(|(i, &c)| (i as u8, c)).collect();
+        let s: Vec<(u8, u64)> = stacks
+            .iter()
+            .enumerate()
+            .map(|(i, &c)| (i as u8, c))
+            .collect();
         Betting::new(&s, button, 5, 10)
     }
 
@@ -431,7 +466,12 @@ mod tests {
         assert_eq!((b.players[0].bet, b.players[1].bet), (5, 10));
         assert_eq!(b.to_act, Some(0));
         assert_eq!(b.act(0, Action::Call), Ok(Progress::ToAct { player: 1 }));
-        assert_eq!(b.act(1, Action::Check), Ok(Progress::Deal { street: Street::Flop }));
+        assert_eq!(
+            b.act(1, Action::Check),
+            Ok(Progress::Deal {
+                street: Street::Flop
+            })
+        );
         // After the flop the big blind (non-button) acts first.
         assert_eq!(b.start_street(Street::Flop), Progress::ToAct { player: 1 });
         assert_eq!(b.pot(), 20);
@@ -442,13 +482,27 @@ mod tests {
         let mut b = table(&[1000, 1000, 1000], 0);
         // SB = 1, BB = 2, UTG = button (0) acts first.
         assert_eq!(b.to_act, Some(0));
-        assert_eq!(b.act(0, Action::Raise { to: 30 }), Ok(Progress::ToAct { player: 1 }));
+        assert_eq!(
+            b.act(0, Action::Raise { to: 30 }),
+            Ok(Progress::ToAct { player: 1 })
+        );
         assert_eq!(b.act(1, Action::Fold), Ok(Progress::ToAct { player: 2 }));
-        assert_eq!(b.act(2, Action::Raise { to: 90 }), Ok(Progress::ToAct { player: 0 }));
+        assert_eq!(
+            b.act(2, Action::Raise { to: 90 }),
+            Ok(Progress::ToAct { player: 0 })
+        );
         // Min re-raise is 90 + 60.
         assert_eq!(b.options(0).min_raise_to, 150);
-        assert_eq!(b.act(0, Action::Raise { to: 120 }), Err(BetError::RaiseTooSmall));
-        assert_eq!(b.act(0, Action::Call), Ok(Progress::Deal { street: Street::Flop }));
+        assert_eq!(
+            b.act(0, Action::Raise { to: 120 }),
+            Err(BetError::RaiseTooSmall)
+        );
+        assert_eq!(
+            b.act(0, Action::Call),
+            Ok(Progress::Deal {
+                street: Street::Flop
+            })
+        );
         assert_eq!(b.pot(), 5 + 90 + 90);
     }
 
@@ -457,7 +511,10 @@ mod tests {
         let mut b = table(&[1000, 1000, 1000], 0);
         assert_eq!(b.act(1, Action::Call), Err(BetError::NotYourTurn));
         assert_eq!(b.act(0, Action::Check), Err(BetError::CannotCheck));
-        assert_eq!(b.act(0, Action::Raise { to: 5000 }), Err(BetError::NotEnoughChips));
+        assert_eq!(
+            b.act(0, Action::Raise { to: 5000 }),
+            Err(BetError::NotEnoughChips)
+        );
     }
 
     #[test]
@@ -465,7 +522,10 @@ mod tests {
         let mut b = table(&[1000, 1000, 1000], 0);
         b.act(0, Action::Raise { to: 40 }).unwrap();
         b.act(1, Action::Fold).unwrap();
-        assert_eq!(b.act(2, Action::Fold), Ok(Progress::Uncontested { winner: 0 }));
+        assert_eq!(
+            b.act(2, Action::Fold),
+            Ok(Progress::Uncontested { winner: 0 })
+        );
         assert_eq!(b.payouts(&[0, 0, 0]), alloc::vec![55, 0, 0]);
     }
 
@@ -481,7 +541,10 @@ mod tests {
         let o = b.options(2);
         assert!(!o.can_raise, "the opener may only call or fold");
         assert_eq!(o.to_call, 50);
-        assert_eq!(b.act(2, Action::Raise { to: 400 }), Err(BetError::CannotRaise));
+        assert_eq!(
+            b.act(2, Action::Raise { to: 400 }),
+            Err(BetError::CannotRaise)
+        );
         // Calling closes the street, and with one actor left it runs out.
         assert_eq!(b.act(2, Action::Call), Ok(Progress::RunOut));
     }
@@ -528,7 +591,12 @@ mod tests {
     fn full_hand_to_showdown() {
         let mut b = table(&[1000, 1000], 1);
         b.act(1, Action::Call).unwrap();
-        assert_eq!(b.act(0, Action::Check), Ok(Progress::Deal { street: Street::Flop }));
+        assert_eq!(
+            b.act(0, Action::Check),
+            Ok(Progress::Deal {
+                street: Street::Flop
+            })
+        );
         for street in [Street::Flop, Street::Turn, Street::River] {
             let first = match b.start_street(street) {
                 Progress::ToAct { player } => player,

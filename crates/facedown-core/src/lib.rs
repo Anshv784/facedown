@@ -67,9 +67,15 @@ mod tests {
     fn audit_rejects_a_swapped_salt_or_board() {
         let (vrf, salt) = ([3u8; 32], [4u8; 32]);
         let commit = salt_commitment(&salt);
-        assert_eq!(audit(&vrf, &[5; 32], &commit, 3, &[]), Err(AuditError::SaltMismatch));
+        assert_eq!(
+            audit(&vrf, &[5; 32], &commit, 3, &[]),
+            Err(AuditError::SaltMismatch)
+        );
         let mut board = Layout::new(&vrf, &salt, 3).board();
         board[0] = (board[0] + 1) % 52;
-        assert_eq!(audit(&vrf, &salt, &commit, 3, &board[..3]), Err(AuditError::BoardMismatch));
+        assert_eq!(
+            audit(&vrf, &salt, &commit, 3, &board[..3]),
+            Err(AuditError::BoardMismatch)
+        );
     }
 }

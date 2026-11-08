@@ -30,8 +30,12 @@ pub fn parse(text: &str) -> Option<Card> {
     if bytes.len() != 2 {
         return None;
     }
-    let r = RANKS.iter().position(|&c| c == bytes[0].to_ascii_uppercase())?;
-    let s = SUITS.iter().position(|&c| c == bytes[1].to_ascii_lowercase())?;
+    let r = RANKS
+        .iter()
+        .position(|&c| c == bytes[0].to_ascii_uppercase())?;
+    let s = SUITS
+        .iter()
+        .position(|&c| c == bytes[1].to_ascii_lowercase())?;
     Some((s * 13 + r) as Card)
 }
 

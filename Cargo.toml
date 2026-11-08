@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/facedown-core"]
+members = ["crates/facedown-core", "contracts/table"]
 # The dealer is built for wasm32-wasip2 on its own.
 exclude = ["dealer"]
 

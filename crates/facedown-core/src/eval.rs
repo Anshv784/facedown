@@ -102,7 +102,10 @@ pub fn evaluate(cards: &[Card]) -> u32 {
     let trips: alloc::vec::Vec<u8> = by(3).collect();
     let pairs: alloc::vec::Vec<u8> = by(2).collect();
     let kicker = |exclude: &[u8], n: usize| -> alloc::vec::Vec<u8> {
-        ranks_desc(all).filter(|r| !exclude.contains(r)).take(n).collect()
+        ranks_desc(all)
+            .filter(|r| !exclude.contains(r))
+            .take(n)
+            .collect()
     };
 
     if let Some(&q) = quads.first() {
@@ -111,7 +114,12 @@ pub fn evaluate(cards: &[Card]) -> u32 {
     }
     if let Some(&t) = trips.first() {
         // A second set of trips also fills the house.
-        let pair = trips.get(1).copied().into_iter().chain(pairs.iter().copied()).max();
+        let pair = trips
+            .get(1)
+            .copied()
+            .into_iter()
+            .chain(pairs.iter().copied())
+            .max();
         if let Some(p) = pair {
             return pack(Category::FullHouse, &[t, p]);
         }
@@ -168,7 +176,10 @@ mod tests {
     #[test]
     fn wheels_and_their_rank() {
         assert_eq!(cat("Ac 2d 3h 4s 5d Kc Kd"), Category::Straight);
-        assert!(score("Ac 2d 3h 4s 5d Kc Qd") < score("2c 3d 4h 5s 6d Kc Qd"), "the wheel is the lowest straight");
+        assert!(
+            score("Ac 2d 3h 4s 5d Kc Qd") < score("2c 3d 4h 5s 6d Kc Qd"),
+            "the wheel is the lowest straight"
+        );
         assert_eq!(cat("Ah 2h 3h 4h 5h Kc Kd"), Category::StraightFlush);
         assert!(score("Ah 2h 3h 4h 5h 9c 9d") < score("2h 3h 4h 5h 6h 9c 9d"));
     }
@@ -182,9 +193,15 @@ mod tests {
         // Two pair compares top pair, then second, then kicker.
         assert!(score("Kh Kd 9c 9s Ad 3c 2h") > score("Kh Kd 8c 8s Ad 3c 2h"));
         // Two trips make a full house with the higher trips on top.
-        assert_eq!(score("7c 7d 7h 9s 9d 9c 2h"), pack(Category::FullHouse, &[7, 5]));
+        assert_eq!(
+            score("7c 7d 7h 9s 9d 9c 2h"),
+            pack(Category::FullHouse, &[7, 5])
+        );
         // Three pairs: the third pair can play as the kicker.
-        assert_eq!(score("Kh Kd Qc Qs Jd Jc 2h"), pack(Category::TwoPair, &[11, 10, 9]));
+        assert_eq!(
+            score("Kh Kd Qc Qs Jd Jc 2h"),
+            pack(Category::TwoPair, &[11, 10, 9])
+        );
         // Flush beats straight even when both are present.
         assert_eq!(cat("4h 5h 6h 7h 9h 8c 2d"), Category::Flush);
     }
