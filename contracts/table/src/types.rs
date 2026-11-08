@@ -252,6 +252,10 @@ pub enum Command {
     Leave {
         table: u32,
     },
+    /// Come back after being sat out for timing out.
+    SitIn {
+        table: u32,
+    },
     Act {
         table: u32,
         hand: U64,

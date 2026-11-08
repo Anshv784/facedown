@@ -4,7 +4,7 @@
 
 use ed25519_dalek::{Signer, SigningKey};
 use facedown_core::deck::{salt_commitment, Layout};
-use facedown_core::game::{Action, Street};
+use facedown_core::game::Street;
 use near_sdk::json_types::U64;
 use near_sdk::serde_json::{json, Value};
 use near_sdk::test_utils::VMContextBuilder;
@@ -431,4 +431,19 @@ fn bots_act_through_the_dealer() {
         Outcome::Showdown | Outcome::Uncontested
     ));
     assert_eq!(rec.hands.len(), 3);
+}
+
+#[test]
+fn sat_out_players_can_sit_back_in() {
+    let (mut c, mut a, _b) = setup_heads_up();
+    deal_job(&mut c, 0, 5_000);
+    {
+        let seat = c.table_mut(0).seats[0].as_mut().unwrap();
+        seat.sitting_out = true;
+        seat.timeouts = 2;
+    }
+    a.send(&mut c, json!({"do": "sit_in", "table": 0}), 6_000);
+    let seat = c.get_table(0).unwrap().seats[0].clone().unwrap();
+    assert!(!seat.sitting_out);
+    assert_eq!(seat.timeouts, 0);
 }

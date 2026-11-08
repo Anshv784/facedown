@@ -13,3 +13,4 @@ borsh = { version = "1", default-features = false, features = ["derive"] }
 
 [dev-dependencies]
 serde_json = "1"
+hex = "0.4"

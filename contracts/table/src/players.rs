@@ -91,6 +91,18 @@ impl Facedown {
                 self.leave(&player, table);
                 None
             }
+            Command::SitIn { table } => {
+                let t = self.table_mut(table);
+                let seat = t
+                    .seats
+                    .iter_mut()
+                    .flatten()
+                    .find(|s| s.player == player)
+                    .unwrap_or_else(|| env::panic_str("not seated here"));
+                seat.sitting_out = false;
+                seat.timeouts = 0;
+                self.try_start(table)
+            }
             Command::Act {
                 table,
                 hand,
