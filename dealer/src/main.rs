@@ -272,6 +272,16 @@ mod tests {
         assert!(handle(&job(&spot.replace("[1,2,3]", "[1,2]")), C, C, K).is_err());
     }
 
+    /// Writes a sealed-hand vector for the browser's decryption test.
+    #[test]
+    #[ignore]
+    fn print_seal_vector() {
+        let me = StaticSecret::from([5u8; 32]);
+        let aad = hole_aad("facedown.testnet", 3, 41, 2);
+        let (epk, ct) = seal([12, 51], &PublicKey::from(&me).to_bytes(), &aad).unwrap();
+        println!(r#"SEAL {{"box":"{}","table":3,"hand":"41","position":2,"epk":"{epk}","ct":"{ct}","cards":[12,51]}}"#, "05".repeat(32));
+    }
+
     #[test]
     fn salt_is_bound_to_the_hand() {
         let k = [9u8; 32];
