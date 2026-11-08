@@ -1,0 +1,30 @@
+[package]
+name = "facedown-dealer"
+description = "The Facedown dealer: runs in an OutLayer TDX enclave, shuffles with OutLayer's VRF and a secret salt, seals hole cards to each player, and plays house bots that see only their own cards."
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+publish = false
+
+[[bin]]
+name = "facedown-dealer"
+path = "src/main.rs"
+
+[dependencies]
+facedown-core = { path = "../crates/facedown-core" }
+outlayer = "0.2.1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+hmac = "0.12"
+hex = "0.4"
+x25519-dalek = { version = "2", features = ["static_secrets"] }
+chacha20poly1305 = "0.10"
+getrandom = "0.2"
+
+[profile.release]
+opt-level = "z"
+lto = true
+strip = true
+codegen-units = 1
+panic = "abort"
