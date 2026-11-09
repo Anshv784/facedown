@@ -15,7 +15,7 @@
   dealer <code>anshv784.testnet/facedown-dealer</code> on OutLayer
 </p>
 
-![Lobby: live featured table, leaderboard and the feed of audited hands](docs/screens/lobby.png)
+![Facedown: the landing page, with a live table running on NEAR testnet](docs/screens/landing.png)
 
 ---
 
@@ -42,7 +42,7 @@ When the hand ends the whole deck becomes public, and the contract checks it bef
 
 ## Try it in 60 seconds
 
-1. Open **[facedown.anshverma.tech](https://facedown.anshverma.tech)**, type a name, press **Join Facedown**. You get 5,000 play chips. No wallet: your browser makes an ed25519 key (signs moves) and an x25519 key (opens your cards).
+1. Open **[facedown.anshverma.tech](https://facedown.anshverma.tech)**, press **Play now**, type a name and press **Join Facedown**. You get 5,000 play chips. No wallet: your browser makes an ed25519 key (signs moves) and an x25519 key (opens your cards).
 2. Pick **Heads-up with Vega** and **Sit down**. The contract asks the dealer to deal; the right panel's **Custody** tab shows the VRF proof, the salt commitment and your sealed cards arriving on chain.
 3. Your two cards flip face up. That's your browser decrypting them; nobody else can.
 4. Play the hand. Vega thinks inside the enclave; the flop, turn and river are revealed one street at a time.
