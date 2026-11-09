@@ -5,6 +5,7 @@ import { chain } from "../lib/near";
 import { auditHand, type Check } from "../lib/poker";
 import type { DealerConfig, HandRecord } from "../lib/types";
 import { Card, MiniCards } from "../ui/Card";
+import { Replay } from "../ui/Replay";
 
 export function HandPage() {
   const tableId = Number(useParams().table);
@@ -97,7 +98,7 @@ export function HandPage() {
         )}
 
         {audit && (
-          <ol className="checks">
+          <ol className="checks panel">
             {audit.checks.map((c, i) => (
               <li key={i} className="panel">
                 <span className={`mark ${i < shown ? (c.ok ? "ok" : "no") : "wait"}`}>{i < shown ? (c.ok ? "✓" : "✕") : i + 1}</span>
@@ -110,7 +111,11 @@ export function HandPage() {
           </ol>
         )}
 
-        <h2 className="serif" style={{ fontWeight: 400, fontSize: 28, margin: "32px 0 12px" }}>Who held what</h2>
+        <div style={{ marginTop: 20 }}>
+          <Replay record={record} />
+        </div>
+
+        <h2 style={{ fontWeight: 700, fontSize: 18, margin: "24px 0 10px" }}>Who held what</h2>
         <div style={{ display: "grid", gap: 8 }}>
           {record.hands.map((h) => (
             <div key={h.position} className="panel" style={{ display: "flex", alignItems: "center", gap: 14, padding: "10px 14px" }}>

@@ -1,5 +1,5 @@
 import { CONTRACT, RPC } from "./config";
-import type { DealerConfig, HandRecord, Options, PlayerRecord, Table, TableSummary } from "./types";
+import type { LeaderEntry, DealerConfig, HandRecord, Options, PlayerRecord, Table, TableSummary } from "./types";
 
 let id = 0;
 export async function view<T>(method: string, args: object = {}): Promise<T> {
@@ -38,5 +38,6 @@ export const chain = {
   hand: (table: number, hand: string) => view<HandRecord | null>("get_hand", { table, hand }),
   recent: (table: number, count = 12) => view<HandRecord[]>("recent_hands", { table, count }),
   dealer: () => view<DealerConfig>("dealer_config"),
+  leaderboard: () => view<LeaderEntry[]>("leaderboard"),
   stats: () => view<{ tables: number; hands_played: string }>("stats"),
 };

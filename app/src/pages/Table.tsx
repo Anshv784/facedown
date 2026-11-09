@@ -8,6 +8,8 @@ import type { Action, Hand, HandRecord, LogEntry, Options, Seat, Table } from ".
 import { Card, MiniCards, Slot } from "../ui/Card";
 import { Custody } from "../ui/Custody";
 import type { Card as C } from "../lib/poker";
+import { sound } from "../lib/sound";
+import { auditHand } from "../lib/poker";
 
 const ACTION_TIMEOUT_MS = 30_000;
 const DEALER_RETRY_MS = 45_000;
@@ -31,12 +33,12 @@ export function TablePage() {
   const myCards = useHoleCards(hand, myPos, tableId);
   const options = useMyOptions(table, myPos);
   useAutoAdvance(table, last, now);
+  useTableSounds(hand, myPos);
 
   if (error && !table) return <main className="prose"><h1>Can't load this table.</h1><p className="error">{error}</p></main>;
   if (!table) return <main className="prose"><p className="faint">Loading table…</p></main>;
 
   const seatOrigin = mySeat >= 0 ? mySeat : 0;
-  const n = table.max_seats;
   const sat = mySeat >= 0 ? table.seats[mySeat] : null;
 
   return (
@@ -67,29 +69,7 @@ export function TablePage() {
           </div>
         </div>
 
-        <div className="stage">
-          <div className="felt" />
-          <Center table={table} hand={hand} result={showResult ? last : null} />
-          {table.seats.map((seat, i) => {
-            const angle = Math.PI / 2 + ((i - seatOrigin) * 2 * Math.PI) / n;
-            return (
-              <SeatView
-                key={i}
-                index={i}
-                angle={angle}
-                seat={seat}
-                table={table}
-                hand={hand}
-                result={showResult ? last : null}
-                me={me}
-                myCards={myCards}
-                now={now}
-                canSit={!!record && mySeat < 0}
-                onSit={() => setBuyIn(i)}
-              />
-            );
-          })}
-        </div>
+        <Stage table={table} hand={hand} result={showResult ? last : null} me={me} myCards={myCards} now={now} origin={seatOrigin} canSit={!!record && mySeat < 0} onSit={setBuyIn} />
 
         {hand && myPos >= 0 && options && options[0] === myPos && !hand.pending && (
           <ActionBar key={`${hand.no}-${hand.log.length}`} hand={hand} options={options[1]} onAct={(action) => run({ do: "act", table: tableId, hand: hand.no, action })} busy={busy} />
@@ -135,7 +115,50 @@ export function TablePage() {
   );
 }
 
+/** The felt, the board and every seat. Shared by the table page and the
+ *  live preview in the lobby. */
+export function Stage(props: {
+  table: Table;
+  hand: Hand | null;
+  result: HandRecord | null;
+  me: string | null;
+  myCards: [C, C] | null;
+  now: number;
+  origin: number;
+  canSit: boolean;
+  onSit: (seat: number) => void;
+}) {
+  const { table, hand, result, me, myCards, now, origin, canSit, onSit } = props;
+  const n = table.max_seats;
+  return (
+    <div className="stage">
+      <div className="felt" />
+      <Center table={table} hand={hand} result={result} />
+      {table.seats.map((seat, i) => (
+        <SeatView
+          key={i}
+          index={i}
+          angle={Math.PI / 2 + ((i - origin) * 2 * Math.PI) / n}
+          seat={seat}
+          table={table}
+          hand={hand}
+          result={result}
+          me={me}
+          myCards={myCards}
+          now={now}
+          canSit={canSit}
+          onSit={() => onSit(i)}
+        />
+      ))}
+    </div>
+  );
+}
+
 // ---------- hooks ----------
+
+export function useNowTick(ms = 500) {
+  return useNow(ms);
+}
 
 function useNow(ms = 500) {
   const [now, setNow] = useState(Date.now());
@@ -144,6 +167,28 @@ function useNow(ms = 500) {
     return () => clearInterval(t);
   }, [ms]);
   return now;
+}
+
+/** Card, chip and your-turn sounds, fired on what changed since the last poll. */
+function useTableSounds(hand: Hand | null, myPos: number) {
+  const prev = useRef({ no: "", board: 0, log: 0, holes: 0, turn: false });
+  useEffect(() => {
+    const p = prev.current;
+    if (!hand) {
+      prev.current = { no: "", board: 0, log: 0, holes: 0, turn: false };
+      return;
+    }
+    const same = p.no === hand.no;
+    if (hand.holes.length > (same ? p.holes : 0)) sound.deal(2);
+    if (same && hand.board.length > p.board) sound.deal(hand.board.length - p.board);
+    if (same && hand.log.length > p.log) {
+      const last = hand.log[hand.log.length - 1];
+      if (last.action.kind !== "check" && last.action.kind !== "fold") sound.chips();
+    }
+    const turn = !hand.pending && hand.betting.to_act === myPos && myPos >= 0;
+    if (turn && !(same && p.turn)) sound.turn();
+    prev.current = { no: hand.no, board: hand.board.length, log: hand.log.length, holes: hand.holes.length, turn };
+  }, [hand, myPos]);
 }
 
 function useHoleCards(hand: Hand | null, myPos: number, tableId: number) {
@@ -522,15 +567,56 @@ function Feed({ table, hand, record }: { table: Table; hand: Hand | null; record
 }
 
 function History({ table, hands }: { table: number; hands: HandRecord[] }) {
+  const [audits, setAudits] = useState<Record<string, boolean | null>>({});
+  const [running, setRunning] = useState(false);
   if (!hands.length) return <p className="faint" style={{ fontSize: 13 }}>No finished hands yet.</p>;
+  const auditAll = async () => {
+    setRunning(true);
+    const dealer = await chain.dealer();
+    const out: Record<string, boolean | null> = {};
+    for (const h of hands) {
+      if (h.outcome.kind === "voided" || !h.vrf || !h.salt || !h.salt_commit) {
+        out[h.no] = null;
+        continue;
+      }
+      const { checks } = auditHand({
+        vrfPubkey: dealer.vrf_pubkey,
+        vrf: h.vrf,
+        expectedSeed: `facedown-${table}-${h.no}`,
+        salt: h.salt,
+        saltCommit: h.salt_commit,
+        players: h.hands.length,
+        board: h.board,
+        shown: h.hands.map((x) => ({ position: x.position, cards: x.cards })),
+      });
+      out[h.no] = checks.every((c) => c.ok);
+      setAudits({ ...out });
+      await new Promise((r) => setTimeout(r, 60));
+    }
+    setRunning(false);
+  };
+  const done = Object.keys(audits).length;
+  const passed = Object.values(audits).filter((v) => v === true).length;
   return (
     <div className="history">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 6 }}>
+        <span className="faint" style={{ fontSize: 13 }}>
+          {done ? `${passed}/${hands.filter((h) => h.outcome.kind !== "voided").length} audited in your browser` : `${hands.length} recent hands`}
+        </span>
+        <button className="btn small" disabled={running} onClick={auditAll}>
+          {running ? "Auditing…" : "Audit all"}
+        </button>
+      </div>
       {hands.map((h) => {
         const top = [...h.hands].sort((a, b) => Number(b.won) - Number(a.won))[0];
+        const a = audits[h.no];
         return (
           <Link key={h.no} to={`/t/${table}/h/${h.no}`}>
             <span>
-              <span className="mono faint">#{h.no}</span> {h.outcome.kind === "voided" ? <span style={{ color: "var(--warn)" }}>voided</span> : `${top?.name} +${(Number(top?.won ?? 0) - Number(top?.put_in ?? 0)).toLocaleString()}`}
+              {a === true && <span className="seal" style={{ marginRight: 6 }}>✓</span>}
+              {a === false && <span className="seal bad" style={{ marginRight: 6 }}>✗</span>}
+              <span className="mono faint">#{h.no}</span>{" "}
+              {h.outcome.kind === "voided" ? <span style={{ color: "var(--bad)" }}>voided</span> : `${top?.name} +${(Number(top?.won ?? 0) - Number(top?.put_in ?? 0)).toLocaleString()}`}
             </span>
             <span className="v">
               <MiniCards cards={h.board} /> <span className="faint">→</span>

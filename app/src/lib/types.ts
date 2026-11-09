@@ -159,3 +159,5 @@ export type Command =
   | { do: "act"; table: number; hand: string; action: Action }
   | { do: "open_table"; name: string; small_blind: string; max_seats: number; bots: BotStyle[] }
   | { do: "set_xpub"; xpub: string };
+
+export type LeaderEntry = { player: string; name: string; net: string; hands: string; won: string };

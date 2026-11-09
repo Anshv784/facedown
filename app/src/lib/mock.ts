@@ -158,6 +158,14 @@ export function mockView(method: string, args: Record<string, unknown>): unknown
       return (mode === "result" ? ["41", "40", "39", "38"] : ["40", "39", "38"]).map(record);
     case "dealer_config":
       return { outlayer: "outlayer.testnet", project_id: "facedown.testnet/dealer", secrets_owner: "facedown.testnet", secrets_profile: "default", vrf_pubkey: hex(ed25519.getPublicKey(vrfSk)) };
+    case "leaderboard":
+      return [
+        { player: me, name: "Ansh", net: "2310", hands: "41", won: "12" },
+        { player: "b".repeat(64), name: "Mira", net: "1180", hands: "29", won: "9" },
+        { player: "c".repeat(64), name: "kofi", net: "450", hands: "12", won: "4" },
+        { player: "d".repeat(64), name: "lena_r", net: "-300", hands: "8", won: "2" },
+        { player: "e".repeat(64), name: "dev", net: "-905", hands: "15", won: "3" },
+      ];
     case "stats":
       return { tables: 3, hands_played: "141" };
   }

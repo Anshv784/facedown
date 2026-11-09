@@ -1,174 +1,186 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { chain } from "../lib/near";
 import { usePlayer, usePoll } from "../lib/player";
-import type { BotStyle } from "../lib/types";
-import { Card } from "../ui/Card";
+import type { BotStyle, HandRecord, TableSummary } from "../lib/types";
+import { MiniCards } from "../ui/Card";
+import { Stage, useNowTick } from "./Table";
 
 const CLAIM_EVERY_MS = 4 * 60 * 60 * 1000;
 
 export function Lobby() {
   const { data: tables, error } = usePoll(() => chain.tables(), 3000, []);
-  const { data: stats } = usePoll(() => chain.stats(), 8000, []);
-
   return (
-    <main>
-      <section className="hero">
-        <div>
-          <div className="eyebrow">No-limit Hold'em on NEAR</div>
-          <h1>
-            The dealer can't see your cards.<em>Neither can we.</em>
-          </h1>
-          <p className="lede">
-            Every deck is shuffled inside a sealed enclave from randomness no one can choose, your two cards are encrypted
-            to a key that never leaves this browser, and when the hand ends the contract re-checks every card that was
-            dealt.
-          </p>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <a href="#tables" className="btn primary">
-              Take a seat
-            </a>
-            <Link to="/how" className="btn ghost">
-              How the deal stays honest
-            </Link>
+    <main className="home">
+      <div className="home-main">
+        <div className="panel strip">
+          <div>
+            <h1>No-limit Hold'em with a dealer nobody can see into</h1>
+            <p>
+              Decks come from verifiable randomness, cards are encrypted to your browser, and the contract audits every hand before a chip moves.
+            </p>
           </div>
-          {stats && (
-            <div className="hero-stats">
-              <div>
-                <strong>{Number(stats.hands_played).toLocaleString()}</strong>
-                <span>hands dealt and audited on chain</span>
-              </div>
-              <div>
-                <strong>{stats.tables}</strong>
-                <span>open tables</span>
-              </div>
-              <div>
-                <strong>0</strong>
-                <span>people who saw your cards</span>
-              </div>
+          <Link to="/how" className="btn small">How it's fair</Link>
+        </div>
+        <Featured tables={tables} />
+        <section>
+          <div className="section-head">
+            <h2>Tables</h2>
+            <OpenTable />
+          </div>
+          {error && !tables && <p className="error">Couldn't reach NEAR testnet: {error}</p>}
+          <div className="panel tables-wrap">
+            <div className="trow thead">
+              <span>Table</span>
+              <span className="hide-sm">Blinds</span>
+              <span className="hide-sm">Seats</span>
+              <span className="hide-sm">Status</span>
+              <span />
             </div>
-          )}
-        </div>
-        <HeroCards />
-      </section>
-
-      <Me />
-
-      <section id="tables" style={{ scrollMarginTop: 24, marginTop: 40 }}>
-        <div className="section-head">
-          <h2>Tables</h2>
-          <OpenTable />
-        </div>
-        {error && !tables && <p className="error">Couldn't reach NEAR testnet: {error}</p>}
-        <div className="tables">
-          {!tables && !error && <div className="panel trow faint">Loading tables…</div>}
-          {tables?.length === 0 && <div className="panel trow faint">No tables yet.</div>}
-          {tables?.map((t) => (
-            <Link key={t.id} to={`/t/${t.id}`} className="panel trow">
-              <div>
-                <div className="name">{t.name}</div>
-                <div className="faint mono" style={{ marginTop: 4 }}>
-                  table {t.id} · {t.players} player{t.players === 1 ? "" : "s"} · {t.bots} bot{t.bots === 1 ? "" : "s"}
+            {!tables && !error && <div className="trow faint">Loading tables…</div>}
+            {tables?.map((t) => (
+              <Link key={t.id} to={`/t/${t.id}`} className="trow">
+                <div>
+                  <div className="name">{t.name}</div>
+                  <div className="faint" style={{ fontSize: 13 }}>
+                    {t.players} player{t.players === 1 ? "" : "s"} · {t.bots} bot{t.bots === 1 ? "" : "s"}
+                  </div>
                 </div>
-              </div>
-              <div className="stakes hide-sm">
-                {Number(t.small_blind).toLocaleString()}/{Number(t.big_blind).toLocaleString()}
-              </div>
-              <div className="dots hide-sm" aria-label={`${t.players} players, ${t.bots} bots, ${t.max_seats} seats`}>
-                {Array.from({ length: t.max_seats }, (_, i) => (
-                  <span key={i} className={`dot ${i < t.players ? "p" : i < t.players + t.bots ? "b" : ""}`} />
-                ))}
-              </div>
-              <div className={`live hide-sm ${t.hand_running ? "on" : ""}`}>
-                {t.hand_running ? "Hand in play" : "Waiting"} · {Number(t.hands_dealt)}
-              </div>
-              <span className="btn small">Sit down →</span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section className="steps">
-        <div className="step">
-          <div className="n">01</div>
-          <div className="eyebrow" style={{ marginTop: 10 }}>Randomness</div>
-          <h3>A deck nobody chose</h3>
-          <p>
-            Each hand starts from OutLayer's verifiable random output. Its proof is checked inside the contract, so the
-            house can't re-roll a deck it doesn't like.
-          </p>
-        </div>
-        <div className="step">
-          <div className="n">02</div>
-          <div className="eyebrow" style={{ marginTop: 10 }}>Sealing</div>
-          <h3>Cards only you can open</h3>
-          <p>
-            The shuffle runs inside a TDX enclave. Your hole cards leave it encrypted to your key; bots are shown only
-            their own two cards, exactly like you.
-          </p>
-        </div>
-        <div className="step">
-          <div className="n">03</div>
-          <div className="eyebrow" style={{ marginTop: 10 }}>Audit</div>
-          <h3>Checked before anyone is paid</h3>
-          <p>
-            The dealer locks a secret before the deal and reveals it after. The contract rebuilds the deck and refunds
-            everyone if a single card doesn't match.
-          </p>
-        </div>
-      </section>
+                <div className="stakes hide-sm">
+                  {Number(t.small_blind).toLocaleString()}/{Number(t.big_blind).toLocaleString()}
+                </div>
+                <div className="dots hide-sm" aria-label={`${t.players} players, ${t.bots} bots, ${t.max_seats} seats`}>
+                  {Array.from({ length: t.max_seats }, (_, i) => (
+                    <span key={i} className={`dot ${i < t.players ? "p" : i < t.players + t.bots ? "b" : ""}`} />
+                  ))}
+                </div>
+                <div className={`live hide-sm ${t.hand_running ? "on" : ""}`}>
+                  {t.hand_running ? "Hand in play" : "Waiting"} · {Number(t.hands_dealt)} dealt
+                </div>
+                <span className="btn small">Join</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      </div>
+      <aside className="home-side">
+        <Me />
+        <Leaders />
+        <Audited tables={tables} />
+      </aside>
     </main>
   );
 }
 
-function HeroCards() {
+/** The busiest table, rendered live from chain state. */
+function Featured({ tables }: { tables: TableSummary[] | null }) {
+  const pick = useMemo(() => {
+    if (!tables?.length) return null;
+    return [...tables].sort((a, b) => Number(b.hand_running) - Number(a.hand_running) || b.players - a.players || Number(b.hands_dealt) - Number(a.hands_dealt))[0];
+  }, [tables]);
+  const id = pick?.id ?? -1;
+  const { data: table } = usePoll(() => (id >= 0 ? chain.table(id) : Promise.resolve(null)), 2000, [id]);
+  const { data: recent } = usePoll(() => (id >= 0 ? chain.recent(id, 1) : Promise.resolve([])), 6000, [id, table?.last_hand]);
+  const now = useNowTick();
+  if (!pick || !table) return <div className="panel" style={{ height: 420 }} />;
+  const last = recent?.[0] ?? null;
+  const result = !table.hand && last && last.no === table.last_hand ? last : null;
   return (
-    <div className="hero-cards" aria-hidden="true">
-      <Card card={51} style={{ left: "6%", top: 40, transform: "rotate(-8deg)" }} />
-      <Card down style={{ left: "40%", top: 14, transform: "rotate(7deg)" }} />
-      <div className="hero-stamp" style={{ right: 0, top: 0 }}>
-        <b>sealed</b> to your x25519 key
-        <br />
-        chacha20-poly1305 · opens only here
+    <Link to={`/t/${table.id}`} className="panel featured" aria-label={`Open ${table.name}`}>
+      <div className="featured-head">
+        <div>
+          <b>{table.name}</b>{" "}
+          <span className="faint num" style={{ marginLeft: 6 }}>
+            {Number(table.small_blind)}/{Number(table.big_blind)}
+          </span>
+        </div>
+        <span className={`live-dot ${table.hand ? "on" : ""}`}>{table.hand ? `Live · hand #${table.hand.no}` : "Between hands"}</span>
       </div>
-      <div className="hero-stamp" style={{ left: 0, bottom: 4 }}>
-        <b>audited</b> vrf ✓ salt commit ✓ board ✓
+      <Stage table={table} hand={table.hand} result={result} me={null} myCards={null} now={now} origin={0} canSit={false} onSit={() => {}} />
+    </Link>
+  );
+}
+
+function Leaders() {
+  const { data } = usePoll(() => chain.leaderboard(), 15000, []);
+  return (
+    <section className="panel side-card">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h3>Leaderboard</h3>
+        <Link to="/leaderboard" className="faint" style={{ fontSize: 13 }}>All →</Link>
       </div>
-    </div>
+      {!data?.length && <span className="faint" style={{ fontSize: 14 }}>No finished hands with players yet.</span>}
+      {data?.slice(0, 5).map((e, i) => (
+        <div key={e.player} className="lb-row">
+          <span className="rk">{i + 1}</span>
+          <span>{e.name}</span>
+          <span className={`num ${Number(e.net.toString()) >= 0 ? "ok" : "error"}`}>
+            {Number(e.net) >= 0 ? "+" : ""}
+            {Number(e.net).toLocaleString()}
+          </span>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+/** Newest finished hands across all tables, each with its audit result. */
+function Audited({ tables }: { tables: TableSummary[] | null }) {
+  const key = tables?.map((t) => `${t.id}:${t.hands_dealt}`).join(",") ?? "";
+  const { data } = usePoll(
+    async () => {
+      if (!tables) return [];
+      const lists = await Promise.all(tables.map((t) => chain.recent(t.id, 4).catch(() => [] as HandRecord[])));
+      return lists.flat().sort((a, b) => Number(b.ended_ms) - Number(a.ended_ms)).slice(0, 7);
+    },
+    10000,
+    [key],
+  );
+  const name = (t: number) => tables?.find((x) => x.id === t)?.name ?? `Table ${t}`;
+  return (
+    <section className="panel side-card">
+      <h3>Recently audited</h3>
+      <div className="audit-feed">
+        {!data?.length && <span className="faint" style={{ fontSize: 14 }}>Nothing yet.</span>}
+        {data?.map((h) => {
+          const top = [...h.hands].sort((a, b) => Number(b.won) - Number(a.won))[0];
+          const voided = h.outcome.kind === "voided";
+          return (
+            <Link key={`${h.table}-${h.no}`} to={`/t/${h.table}/h/${h.no}`}>
+              <span className={`seal ${voided ? "bad" : ""}`}>{voided ? "VOID" : "✓"}</span>
+              <span>
+                {name(h.table)} <span className="faint">#{h.no}</span>
+                <br />
+                <span className="faint" style={{ fontSize: 12.5 }}>{voided ? "refunded" : `${top?.name} won ${Number(top?.won ?? 0).toLocaleString()}`}</span>
+              </span>
+              <MiniCards cards={h.board} />
+            </Link>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
 function Me() {
   const { record, loading, register, busy, run } = usePlayer();
   const [name, setName] = useState("");
-  if (loading) return null;
+  if (loading) return <section className="panel side-card" style={{ height: 150 }} />;
   if (!record) {
     return (
-      <section className="panel join">
-        <div>
-          <div className="eyebrow">Your seat</div>
-          <h2>Pick a name, get 5,000 chips.</h2>
-          <p className="muted" style={{ margin: 0, fontSize: 14 }}>
-            No wallet needed. This browser makes two keys: one signs your moves, the other opens your cards. Play chips
-            only.
-          </p>
-        </div>
+      <section className="panel side-card">
+        <h3>Get a seat</h3>
+        <p className="muted" style={{ margin: 0, fontSize: 14 }}>
+          Pick a name and get 5,000 play chips. No wallet: this browser makes two keys, one signs your moves, the other opens your cards.
+        </p>
         <form
-          style={{ display: "flex", gap: 10, flexWrap: "wrap", minWidth: "min(100%, 440px)" }}
+          style={{ display: "grid", gap: 8 }}
           onSubmit={(e) => {
             e.preventDefault();
             if (name.trim().length >= 2) register(name);
           }}
         >
-          <input
-            className="input"
-            style={{ flex: 1, minWidth: 180 }}
-            placeholder="Name at the table"
-            maxLength={20}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            aria-label="Name at the table"
-          />
+          <input className="input" placeholder="Name at the table" maxLength={20} value={name} onChange={(e) => setName(e.target.value)} aria-label="Name at the table" />
           <button className="btn primary" disabled={busy || name.trim().length < 2}>
             {busy ? "Creating…" : "Join Facedown"}
           </button>
@@ -179,23 +191,20 @@ function Me() {
   const nextClaim = record.last_claim_ms + CLAIM_EVERY_MS;
   const canClaim = Date.now() >= nextClaim;
   return (
-    <section className="panel me">
-      <div style={{ flex: 1 }}>
-        <div className="eyebrow">Signed in on this browser</div>
-        <div style={{ fontSize: 18, fontWeight: 500 }}>
-          {record.name} · <span className="chips">{record.chips.toLocaleString()} chips</span>
-        </div>
-        <div className="faint" style={{ fontSize: 13 }}>
-          {record.hands_played} hands · {record.hands_won} won · net{" "}
-          <span className="mono">{record.net >= 0 ? "+" : ""}{record.net.toLocaleString()}</span>
-        </div>
+    <section className="panel side-card">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+        <h3>{record.name}</h3>
+        <Link to="/me" className="faint" style={{ fontSize: 13 }}>Profile →</Link>
+      </div>
+      <div className="chips" style={{ fontSize: 30, lineHeight: 1 }}>{record.chips.toLocaleString()}</div>
+      <div>
+        <div className="kv-row"><span className="muted">Hands</span><span className="num">{record.hands_played}</span></div>
+        <div className="kv-row"><span className="muted">Won</span><span className="num">{record.hands_won}</span></div>
+        <div className="kv-row"><span className="muted">Net</span><span className="num">{record.net >= 0 ? "+" : ""}{record.net.toLocaleString()}</span></div>
       </div>
       <button className="btn small" disabled={!canClaim || busy} onClick={() => run({ do: "claim" })}>
         {canClaim ? "Claim 2,000 chips" : `More chips in ${Math.ceil((nextClaim - Date.now()) / 60000)} min`}
       </button>
-      <Link to="/me" className="btn small ghost">
-        Profile & backup
-      </Link>
     </section>
   );
 }
