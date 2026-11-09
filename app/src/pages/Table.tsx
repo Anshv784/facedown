@@ -245,19 +245,19 @@ function Center({ table, hand, result }: { table: Table; hand: Hand | null; resu
         </div>
       )}
       {result && (
-        <div className="pot" style={{ fontSize: 20, textAlign: "center" }}>
+        <div className="result">
           {result.outcome.kind === "voided" ? (
-            <span style={{ color: "var(--warn)" }}>Hand voided, every chip returned</span>
+            <span className="who">Hand voided · every chip returned</span>
           ) : (
             winners.map((w) => (
-              <div key={w.position}>
+              <div key={w.position} className="who">
                 {w.name} wins {Number(w.won).toLocaleString()}
-                {result.outcome.kind === "showdown" ? <span className="faint"> · {w.category}</span> : null}
+                {result.outcome.kind === "showdown" ? <span style={{ fontWeight: 500, opacity: 0.8 }}> · {w.category}</span> : null}
               </div>
             ))
           )}
-          <Link to={`/t/${table.id}/h/${result.no}`} className="mono" style={{ display: "inline-block", fontSize: 12, marginTop: 6, color: "var(--good)" }}>
-            {result.outcome.kind === "voided" ? "see why →" : "audited on chain ✓ verify it yourself →"}
+          <Link to={`/t/${table.id}/h/${result.no}`}>
+            {result.outcome.kind === "voided" ? "see why →" : "✓ audited on chain · verify it yourself →"}
           </Link>
         </div>
       )}
@@ -409,7 +409,7 @@ function ActionBar({ hand, options, onAct, busy }: { hand: Hand; options: Option
 
   const disabled = busy || sent;
   return (
-    <div className="panel actionbar" aria-label="Your move">
+    <div className="panel actionbar mine" aria-label="Your move">
       {!options.can_check && (
         <button className="btn" disabled={disabled} onClick={() => act({ kind: "fold" })}>
           Fold <kbd className="faint mono">F</kbd>

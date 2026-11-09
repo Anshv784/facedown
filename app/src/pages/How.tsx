@@ -21,41 +21,41 @@ export function HowPage() {
         <svg viewBox="0 0 760 300" role="img" aria-label="Diagram: the table contract asks the OutLayer enclave to deal; the enclave draws VRF randomness, commits to a secret, seals hole cards to each player's key; the contract verifies and stores only sealed cards; at the end the secret is revealed and the contract audits the deck.">
           <defs>
             <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-              <path d="M0 0L10 5L0 10z" fill="#c19a5b" />
+              <path d="M0 0L10 5L0 10z" fill="#0d0d0c" />
             </marker>
           </defs>
-          <g fontFamily="Geist, sans-serif" fontSize="13" fill="#ece6d8">
-            <rect x="10" y="100" width="170" height="100" rx="12" fill="#14120f" stroke="#3a342b" />
+          <g fontFamily="Archivo Variable, sans-serif" fontSize="13" fill="#0d0d0c">
+            <rect x="10" y="100" width="170" height="100" rx="2" fill="#ffffff" stroke="#0d0d0c" strokeWidth="1.5" />
             <text x="95" y="130" textAnchor="middle" fontWeight="600">Your browser</text>
-            <text x="95" y="152" textAnchor="middle" fill="#b4ab98" fontSize="12">ed25519: signs moves</text>
-            <text x="95" y="170" textAnchor="middle" fill="#b4ab98" fontSize="12">x25519: opens your cards</text>
+            <text x="95" y="152" textAnchor="middle" fill="#4b4b47" fontSize="12">ed25519: signs moves</text>
+            <text x="95" y="170" textAnchor="middle" fill="#4b4b47" fontSize="12">x25519: opens your cards</text>
 
-            <rect x="295" y="100" width="170" height="100" rx="12" fill="#14120f" stroke="#c19a5b" />
-            <text x="380" y="130" textAnchor="middle" fontWeight="600">Table contract</text>
-            <text x="380" y="152" textAnchor="middle" fill="#b4ab98" fontSize="12">rules, chips, timeouts</text>
-            <text x="380" y="170" textAnchor="middle" fill="#b4ab98" fontSize="12">verifies + audits</text>
+            <rect x="295" y="100" width="170" height="100" rx="2" fill="#1d3fd8" stroke="#0d0d0c" strokeWidth="1.5" />
+            <text x="380" y="130" textAnchor="middle" fontWeight="700" fill="#fff">Table contract</text>
+            <text x="380" y="152" textAnchor="middle" fill="#fff" fontSize="12">rules, chips, timeouts</text>
+            <text x="380" y="170" textAnchor="middle" fill="#fff" fontSize="12">verifies + audits</text>
 
-            <rect x="580" y="70" width="170" height="160" rx="12" fill="#1b0f0d" stroke="#7a3a30" />
-            <text x="665" y="98" textAnchor="middle" fontWeight="600">Dealer enclave</text>
-            <text x="665" y="116" textAnchor="middle" fill="#b4ab98" fontSize="11.5">OutLayer · Intel TDX</text>
-            <text x="665" y="146" textAnchor="middle" fill="#b4ab98" fontSize="12">VRF randomness</text>
-            <text x="665" y="166" textAnchor="middle" fill="#b4ab98" fontSize="12">secret salt (sealed key)</text>
-            <text x="665" y="186" textAnchor="middle" fill="#b4ab98" fontSize="12">shuffle · seal · bots</text>
+            <rect x="580" y="70" width="170" height="160" rx="2" fill="#e1251b" stroke="#0d0d0c" strokeWidth="1.5" />
+            <text x="665" y="98" textAnchor="middle" fill="#fff" fontWeight="700">Dealer enclave</text>
+            <text x="665" y="116" textAnchor="middle" fill="#fff" fontSize="11.5">OutLayer · Intel TDX</text>
+            <text x="665" y="146" textAnchor="middle" fill="#fff" fontSize="12">VRF randomness</text>
+            <text x="665" y="166" textAnchor="middle" fill="#fff" fontSize="12">secret salt (sealed key)</text>
+            <text x="665" y="186" textAnchor="middle" fill="#fff" fontSize="12">shuffle · seal · bots</text>
 
-            <path d="M180 135H290" stroke="#c19a5b" strokeWidth="1.4" markerEnd="url(#a)" />
-            <text x="235" y="126" textAnchor="middle" fontSize="11" fill="#e3c48c">signed move</text>
-            <path d="M290 168H184" stroke="#c19a5b" strokeWidth="1.4" markerEnd="url(#a)" />
-            <text x="237" y="186" textAnchor="middle" fontSize="11" fill="#e3c48c">sealed cards</text>
+            <path d="M180 135H290" stroke="#0d0d0c" strokeWidth="1.4" markerEnd="url(#a)" />
+            <text x="235" y="126" textAnchor="middle" fontSize="11" fill="#e1251b">signed move</text>
+            <path d="M290 168H184" stroke="#0d0d0c" strokeWidth="1.4" markerEnd="url(#a)" />
+            <text x="237" y="186" textAnchor="middle" fontSize="11" fill="#e1251b">sealed cards</text>
 
-            <path d="M465 125H575" stroke="#c19a5b" strokeWidth="1.4" markerEnd="url(#a)" />
-            <text x="520" y="116" textAnchor="middle" fontSize="11" fill="#e3c48c">deal / reveal job</text>
-            <path d="M575 175H469" stroke="#c19a5b" strokeWidth="1.4" markerEnd="url(#a)" />
-            <text x="522" y="194" textAnchor="middle" fontSize="11" fill="#e3c48c">proof + commitment</text>
+            <path d="M465 125H575" stroke="#0d0d0c" strokeWidth="1.4" markerEnd="url(#a)" />
+            <text x="520" y="116" textAnchor="middle" fontSize="11" fill="#e1251b">deal / reveal job</text>
+            <path d="M575 175H469" stroke="#0d0d0c" strokeWidth="1.4" markerEnd="url(#a)" />
+            <text x="522" y="194" textAnchor="middle" fontSize="11" fill="#e1251b">proof + commitment</text>
 
-            <text x="380" y="262" textAnchor="middle" fill="#7d7566" fontSize="12">
+            <text x="380" y="262" textAnchor="middle" fill="#4b4b47" fontSize="12">
               End of hand: salt revealed → contract rebuilds the deck → any mismatch voids the hand and refunds everyone
             </text>
-            <text x="380" y="40" textAnchor="middle" fill="#7d7566" fontSize="12">
+            <text x="380" y="40" textAnchor="middle" fill="#4b4b47" fontSize="12">
               Only ciphertext and commitments ever touch the chain while cards are live
             </text>
           </g>

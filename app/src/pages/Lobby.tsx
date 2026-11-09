@@ -17,7 +17,7 @@ export function Lobby() {
         <div>
           <div className="eyebrow">No-limit Hold'em on NEAR</div>
           <h1>
-            The dealer can't see your cards. <em>Neither can we.</em>
+            The dealer can't see your cards.<em>Neither can we.</em>
           </h1>
           <p className="lede">
             Every deck is shuffled inside a sealed enclave from randomness no one can choose, your two cards are encrypted
@@ -33,9 +33,20 @@ export function Lobby() {
             </Link>
           </div>
           {stats && (
-            <p className="faint mono" style={{ marginTop: 22 }}>
-              {Number(stats.hands_played).toLocaleString()} hands dealt and audited on chain · {stats.tables} tables
-            </p>
+            <div className="hero-stats">
+              <div>
+                <strong>{Number(stats.hands_played).toLocaleString()}</strong>
+                <span>hands dealt and audited on chain</span>
+              </div>
+              <div>
+                <strong>{stats.tables}</strong>
+                <span>open tables</span>
+              </div>
+              <div>
+                <strong>0</strong>
+                <span>people who saw your cards</span>
+              </div>
+            </div>
           )}
         </div>
         <HeroCards />
@@ -56,11 +67,11 @@ export function Lobby() {
             <Link key={t.id} to={`/t/${t.id}`} className="panel trow">
               <div>
                 <div className="name">{t.name}</div>
-                <div className="faint" style={{ fontSize: 13 }}>
-                  Table {t.id}
+                <div className="faint mono" style={{ marginTop: 4 }}>
+                  table {t.id} · {t.players} player{t.players === 1 ? "" : "s"} · {t.bots} bot{t.bots === 1 ? "" : "s"}
                 </div>
               </div>
-              <div className="mono hide-sm">
+              <div className="stakes hide-sm">
                 {Number(t.small_blind).toLocaleString()}/{Number(t.big_blind).toLocaleString()}
               </div>
               <div className="dots hide-sm" aria-label={`${t.players} players, ${t.bots} bots, ${t.max_seats} seats`}>
@@ -71,7 +82,7 @@ export function Lobby() {
               <div className={`live hide-sm ${t.hand_running ? "on" : ""}`}>
                 {t.hand_running ? "Hand in play" : "Waiting"} · {Number(t.hands_dealt)}
               </div>
-              <span className="btn small">Open</span>
+              <span className="btn small">Sit down →</span>
             </Link>
           ))}
         </div>
@@ -79,7 +90,8 @@ export function Lobby() {
 
       <section className="steps">
         <div className="step">
-          <div className="n">01 · Randomness</div>
+          <div className="n">01</div>
+          <div className="eyebrow" style={{ marginTop: 10 }}>Randomness</div>
           <h3>A deck nobody chose</h3>
           <p>
             Each hand starts from OutLayer's verifiable random output. Its proof is checked inside the contract, so the
@@ -87,7 +99,8 @@ export function Lobby() {
           </p>
         </div>
         <div className="step">
-          <div className="n">02 · Sealing</div>
+          <div className="n">02</div>
+          <div className="eyebrow" style={{ marginTop: 10 }}>Sealing</div>
           <h3>Cards only you can open</h3>
           <p>
             The shuffle runs inside a TDX enclave. Your hole cards leave it encrypted to your key; bots are shown only
@@ -95,7 +108,8 @@ export function Lobby() {
           </p>
         </div>
         <div className="step">
-          <div className="n">03 · Audit</div>
+          <div className="n">03</div>
+          <div className="eyebrow" style={{ marginTop: 10 }}>Audit</div>
           <h3>Checked before anyone is paid</h3>
           <p>
             The dealer locks a secret before the deal and reveals it after. The contract rebuilds the deck and refunds
@@ -110,15 +124,15 @@ export function Lobby() {
 function HeroCards() {
   return (
     <div className="hero-cards" aria-hidden="true">
-      <Card card={51} style={{ left: "8%", top: 30, transform: "rotate(-9deg)" }} />
-      <Card down style={{ left: "38%", top: 10, transform: "rotate(6deg)" }} />
-      <div className="hero-stamp" style={{ right: 0, bottom: 34 }}>
-        sealed to <b>your x25519 key</b>
+      <Card card={51} style={{ left: "6%", top: 40, transform: "rotate(-8deg)" }} />
+      <Card down style={{ left: "40%", top: 14, transform: "rotate(7deg)" }} />
+      <div className="hero-stamp" style={{ right: 0, top: 0 }}>
+        <b>sealed</b> to your x25519 key
         <br />
         chacha20-poly1305 · opens only here
       </div>
-      <div className="hero-stamp" style={{ left: 0, bottom: 0 }}>
-        vrf ✓ · salt commit ✓ · board ✓
+      <div className="hero-stamp" style={{ left: 0, bottom: 4 }}>
+        <b>audited</b> vrf ✓ salt commit ✓ board ✓
       </div>
     </div>
   );
@@ -130,19 +144,17 @@ function Me() {
   if (loading) return null;
   if (!record) {
     return (
-      <section className="panel" style={{ padding: 22, display: "grid", gap: 14 }}>
+      <section className="panel join">
         <div>
           <div className="eyebrow">Your seat</div>
-          <h2 className="serif" style={{ fontSize: 30, margin: "6px 0 4px", fontWeight: 400 }}>
-            Pick a name and get 5,000 chips
-          </h2>
+          <h2>Pick a name, get 5,000 chips.</h2>
           <p className="muted" style={{ margin: 0, fontSize: 14 }}>
             No wallet needed. This browser makes two keys: one signs your moves, the other opens your cards. Play chips
             only.
           </p>
         </div>
         <form
-          style={{ display: "flex", gap: 10, flexWrap: "wrap" }}
+          style={{ display: "flex", gap: 10, flexWrap: "wrap", minWidth: "min(100%, 440px)" }}
           onSubmit={(e) => {
             e.preventDefault();
             if (name.trim().length >= 2) register(name);
@@ -150,7 +162,7 @@ function Me() {
         >
           <input
             className="input"
-            style={{ maxWidth: 320 }}
+            style={{ flex: 1, minWidth: 180 }}
             placeholder="Name at the table"
             maxLength={20}
             value={name}
