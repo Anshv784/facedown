@@ -4,6 +4,7 @@ import { CONTRACT, EXPLORER } from "./lib/config";
 import { usePlayer } from "./lib/player";
 import { Mark } from "./ui/Logo";
 import { Lobby } from "./pages/Lobby";
+import { Landing } from "./pages/Landing";
 import { TablePage } from "./pages/Table";
 import { HandPage } from "./pages/Hand";
 import { HowPage } from "./pages/How";
@@ -32,8 +33,8 @@ export function App() {
             <span className="word">Facedown</span>
           </Link>
           <nav className="nav">
-            <NavLink to="/" end>
-              Tables
+            <NavLink to="/play">
+              Play
             </NavLink>
             <NavLink to="/leaderboard" className="hide-sm">
               Leaderboard
@@ -48,10 +49,16 @@ export function App() {
               </NavLink>
             ) : null}
             <span className="net">testnet</span>
+            {!record && pathname === "/" && (
+              <Link to="/play" className="btn primary small" style={{ marginLeft: 8 }}>
+                Play now
+              </Link>
+            )}
           </nav>
         </header>
         <Routes>
-          <Route path="/" element={<Lobby />} />
+          <Route path="/" element={<Landing />} />
+          <Route path="/play" element={<Lobby />} />
           <Route path="/t/:table" element={<TablePage />} />
           <Route path="/t/:table/h/:hand" element={<HandPage />} />
           <Route path="/how" element={<HowPage />} />

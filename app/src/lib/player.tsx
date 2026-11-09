@@ -72,8 +72,26 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
             if (!r) throw new Error("make a player first");
             nextNonce.current = r.nonce;
           }
-          await send(identity, nextNonce.current, command);
-          nextNonce.current += 1;
+          const used = nextNonce.current;
+          try {
+            await send(identity, used, command);
+          } catch (e) {
+            // "Stale nonce" usually means this very command already landed
+            // (a retried submission, or an RPC read that lagged). If the
+            // chain's nonce moved past the one we used, it went through.
+            if (!/stale or future nonce/.test(String(e))) throw e;
+            for (let i = 0; i < 5; i++) {
+              await new Promise((r) => setTimeout(r, 700));
+              const r = await chain.player(playerId(identity)).catch(() => null);
+              if (r && r.nonce > used) {
+                nextNonce.current = r.nonce;
+                refresh();
+                return true;
+              }
+            }
+            throw e;
+          }
+          nextNonce.current = used + 1;
           refresh();
           return true;
         } catch (e) {

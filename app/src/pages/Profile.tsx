@@ -80,7 +80,7 @@ export function ProfilePage() {
       </form>
       {msg && <p className="muted">{msg}</p>}
       <p style={{ marginTop: 40 }}>
-        <Link to="/">← Back to the tables</Link>
+        <Link to="/play">← Back to the tables</Link>
       </p>
     </main>
   );

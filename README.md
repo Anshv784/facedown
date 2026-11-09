@@ -123,7 +123,7 @@ The contract and the enclave run the same Rust core. The browser runs a TypeScri
 ```bash
 cargo test                                         # core + contract
 cd dealer && cargo test && cargo build --release --target wasm32-wasip2
-cd app && npm i && npm test && npm run dev         # /?mock=flop shows the UI without a chain
+cd app && npm i && npm test && npm run dev         # /play?mock=flop shows the UI without a chain
 node app/scripts/live-site.mjs 1                   # plays a real hand through the live site
 ```
 

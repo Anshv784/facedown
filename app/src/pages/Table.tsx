@@ -46,7 +46,7 @@ export function TablePage() {
       <div>
         <div className="room-head">
           <div>
-            <Link to="/" className="faint" style={{ fontSize: 13, textDecoration: "none" }}>
+            <Link to="/play" className="faint" style={{ fontSize: 13, textDecoration: "none" }}>
               ← Tables
             </Link>
             <h1>{table.name}</h1>
@@ -77,7 +77,7 @@ export function TablePage() {
         {!record && (
           <div className="panel actionbar">
             <span className="muted grow">Watching. Join from the lobby to take a seat.</span>
-            <Link to="/" className="btn small primary">
+            <Link to="/play" className="btn small primary">
               Join
             </Link>
           </div>

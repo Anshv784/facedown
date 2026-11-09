@@ -305,3 +305,78 @@ footer.foot { border-top: 1px solid var(--line); padding: 18px 0 32px; color: va
   .dealer-status { max-width: 230px; font-size: 11.5px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* ---------- landing ---------- */
+.landing { padding-bottom: 20px; }
+.l-hero { display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); gap: 48px; align-items: center; padding: 56px 0 64px; }
+.l-hero h1 { font-size: clamp(38px, 4.4vw, 58px); line-height: 1.04; letter-spacing: -0.025em; font-weight: 700; margin: 18px 0 18px; }
+.l-hero p { font-size: 18px; color: var(--ink-2); line-height: 1.6; margin: 0 0 28px; max-width: 34em; }
+.l-tag { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: var(--ink-2); background: var(--panel); border: 1px solid var(--line); padding: 5px 12px 5px 10px; border-radius: 999px; }
+.l-live { width: 8px; height: 8px; border-radius: 50%; background: var(--good); box-shadow: 0 0 0 4px rgba(62, 207, 142, 0.16); }
+.l-cta { display: flex; gap: 10px; flex-wrap: wrap; }
+.l-big { height: 48px; padding: 0 22px; font-size: 16px; border-radius: 9px; }
+.l-proof { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 30px; color: var(--ink-3); font-size: 14px; }
+.l-proof b { color: var(--ink); font-size: 19px; margin-right: 4px; }
+.l-hero-table { position: relative; }
+.l-device { overflow: hidden; box-shadow: 0 40px 80px rgba(0, 0, 0, 0.45); }
+.l-device a { display: block; padding: 34px 6px 26px; }
+.l-device-bar { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.l-dots { display: flex; gap: 6px; }
+.l-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--line-2); }
+.l-pin { position: absolute; z-index: 5; background: #0f1114; border: 1px solid var(--line-2); border-left: 3px solid var(--amber); border-radius: 8px; padding: 8px 12px; display: grid; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5); }
+.l-pin b { font-size: 14px; }
+.l-pin span { font-size: 12.5px; color: var(--ink-2); }
+
+.l-band { background: var(--bg-2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin: 0 calc(50% - 50vw); padding: 64px calc(50vw - 50%); }
+.l-split { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr); gap: 48px; align-items: start; }
+.l-split h2 { font-size: clamp(24px, 2.6vw, 34px); line-height: 1.2; letter-spacing: -0.015em; margin: 10px 0 18px; font-weight: 700; }
+.l-split p { color: var(--ink-2); font-size: 16.5px; line-height: 1.65; margin: 0 0 14px; }
+.l-split p b { color: var(--ink); }
+.l-file { padding: 18px 20px; }
+.l-file-head { display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px dashed var(--line-2); margin-bottom: 6px; }
+.l-file dl { display: grid; grid-template-columns: 96px 1fr; gap: 10px 14px; margin: 10px 0 0; font-size: 14.5px; }
+.l-file dt { color: var(--ink-3); }
+.l-file dd { margin: 0; }
+
+.l-section { padding: 64px 0 8px; }
+.l-head { max-width: 760px; margin-bottom: 24px; }
+.l-head h2 { font-size: clamp(24px, 2.6vw, 32px); line-height: 1.2; letter-spacing: -0.015em; margin: 8px 0 0; font-weight: 700; }
+.l-seegrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.l-see { display: grid; grid-template-columns: 34px 1fr; gap: 12px; padding: 16px; align-items: start; }
+.l-see b { font-size: 15.5px; }
+.l-see p { margin: 3px 0 0; color: var(--ink-2); font-size: 14px; line-height: 1.5; }
+.l-eye { width: 34px; height: 34px; border-radius: 8px; display: grid; place-items: center; background: rgba(62, 207, 142, 0.12); color: var(--good); }
+.l-eye.off { background: rgba(240, 98, 98, 0.1); color: var(--bad); }
+.l-note { color: var(--ink-2); font-size: 15px; margin: 16px 0 0; }
+.l-steps { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; counter-reset: s; }
+.l-steps li { padding: 18px; display: grid; gap: 8px; align-content: start; position: relative; }
+.l-steps li b { font-size: 15.5px; }
+.l-steps li p { margin: 0; color: var(--ink-2); font-size: 14px; line-height: 1.55; }
+.l-steps code { font-family: var(--mono); font-size: 12px; color: var(--amber); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; margin-top: 4px; word-break: break-all; }
+.l-n { width: 26px; height: 26px; border-radius: 50%; background: var(--panel-2); border: 1px solid var(--line-2); display: grid; place-items: center; font-family: var(--cond); font-weight: 700; color: var(--amber); }
+.l-bots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.l-bot { padding: 18px; display: grid; gap: 8px; }
+.l-bot-top { display: flex; justify-content: space-between; align-items: center; }
+.l-bot-top b { font-size: 20px; }
+.l-chip { font-size: 12px; font-weight: 700; color: var(--amber); border: 1px solid rgba(242, 179, 61, 0.4); border-radius: 999px; padding: 1px 9px; }
+.l-bot p { margin: 0; color: var(--ink-2); font-size: 15px; }
+.l-final { text-align: center; padding: 88px 0 72px; display: grid; justify-items: center; gap: 14px; }
+.l-final h2 { font-size: clamp(26px, 3vw, 38px); letter-spacing: -0.02em; margin: 8px 0 12px; max-width: 18em; }
+.landing-top .btn.primary { height: 36px; }
+
+/* wider, centred reading pages */
+.prose { margin: 0 auto; }
+.page { max-width: 1000px; margin: 0 auto; padding: 40px 0 72px; }
+.page h1 { font-size: 34px; font-weight: 700; letter-spacing: -0.015em; margin: 6px 0 10px; }
+.page > p { color: var(--ink-2); font-size: 16.5px; margin: 0 0 20px; }
+
+@media (max-width: 1040px) {
+  .l-hero, .l-split { grid-template-columns: 1fr; }
+  .l-seegrid, .l-bots { grid-template-columns: 1fr 1fr; }
+  .l-steps { grid-template-columns: 1fr 1fr; }
+  .l-pin { display: none; }
+}
+@media (max-width: 640px) {
+  .l-seegrid, .l-bots, .l-steps { grid-template-columns: 1fr; }
+  .l-hero { padding-top: 32px; }
+}

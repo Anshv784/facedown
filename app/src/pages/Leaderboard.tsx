@@ -5,7 +5,7 @@ export function LeaderboardPage() {
   const { data, error } = usePoll(() => chain.leaderboard(), 10000, []);
   const { id } = usePlayer();
   return (
-    <main className="prose" style={{ maxWidth: 820 }}>
+    <main className="page">
       <h1>Leaderboard</h1>
       <p>Net chips won at the tables, from the contract's own records. Every hand behind these numbers was audited before it paid.</p>
       {error && <p className="error">{error}</p>}
