@@ -65,6 +65,12 @@ async function firstFailure(hash: string): Promise<string | null> {
   return null;
 }
 
+/** The player's next expected command nonce, read from the contract. */
+export async function playerNonce(player: string): Promise<number | null> {
+  const r = (await provider.callFunction({ contractId: CONTRACT, method: "get_player", args: { id: player } })) as { nonce: number } | null;
+  return r ? r.nonce : null;
+}
+
 export function json(body: object, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 }

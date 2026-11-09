@@ -1,4 +1,4 @@
-import { call, errorText, json } from "./_near.js";
+import { call, errorText, json, playerNonce } from "./_near.js";
 
 const HEX = /^[0-9a-f]+$/;
 
@@ -21,6 +21,12 @@ export async function POST(request: Request) {
   }
   try {
     const { tx, error } = await call("relay", { player, nonce, payload, signature });
+    if (error && /stale or future nonce/.test(errorText(error))) {
+      // A retried submission can land twice; the contract refuses the copy.
+      // If the player's nonce already moved past this command, it went through.
+      const now = await playerNonce(player).catch(() => null);
+      if (now !== null && now > Number(nonce)) return json({ ok: true, tx, duplicate: true });
+    }
     return error ? json({ ok: false, error: errorText(error), tx }, 200) : json({ ok: true, tx });
   } catch (e) {
     return json({ ok: false, error: errorText(e) }, 502);
