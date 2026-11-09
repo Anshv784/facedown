@@ -447,3 +447,25 @@ fn sat_out_players_can_sit_back_in() {
     assert!(!seat.sitting_out);
     assert_eq!(seat.timeouts, 0);
 }
+
+#[test]
+fn leaderboard_keeps_the_top_by_net_and_replaces_rows() {
+    let _c = new_contract();
+    use crate::views::{read_leaderboard, update_leaderboard, LeaderEntry};
+    let row = |p: &str, net: i64| LeaderEntry {
+        player: p.into(),
+        name: p.into(),
+        net: near_sdk::json_types::I64(net),
+        hands: U64(1),
+        won: U64(0),
+    };
+    for i in 0..25 {
+        update_leaderboard(row(&format!("p{i}"), i * 10));
+    }
+    update_leaderboard(row("p3", 1_000));
+    let board = read_leaderboard();
+    assert_eq!(board.len(), 20);
+    assert_eq!(board[0].player, "p3");
+    assert_eq!(board.iter().filter(|e| e.player == "p3").count(), 1);
+    assert_eq!(board[1].net.0, 240);
+}

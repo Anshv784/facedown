@@ -325,6 +325,14 @@ impl Facedown {
                 if paid > b.players[p].total {
                     r.hands_won += 1;
                 }
+                let entry = crate::views::LeaderEntry {
+                    player: id.clone(),
+                    name: r.name.clone(),
+                    net: near_sdk::json_types::I64(r.net),
+                    hands: U64(r.hands_played),
+                    won: U64(r.hands_won),
+                };
+                crate::views::update_leaderboard(entry);
             }
         }
         let record = HandRecord {

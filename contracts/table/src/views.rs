@@ -17,6 +17,37 @@ pub struct TableSummary {
     pub hands_dealt: U64,
 }
 
+/// One row of the leaderboard (human players only; bots have no record).
+#[near(serializers = [borsh, json])]
+#[derive(Clone, Debug)]
+pub struct LeaderEntry {
+    pub player: String,
+    pub name: String,
+    pub net: near_sdk::json_types::I64,
+    pub hands: U64,
+    pub won: U64,
+}
+
+/// The top players by net chips, kept under its own storage key so adding
+/// it needed no change to the contract's state layout.
+const LEADERBOARD_KEY: &[u8] = b"lb";
+const LEADERBOARD_SIZE: usize = 20;
+
+pub(crate) fn read_leaderboard() -> Vec<LeaderEntry> {
+    near_sdk::env::storage_read(LEADERBOARD_KEY)
+        .and_then(|b| near_sdk::borsh::from_slice(&b).ok())
+        .unwrap_or_default()
+}
+
+pub(crate) fn update_leaderboard(entry: LeaderEntry) {
+    let mut board = read_leaderboard();
+    board.retain(|e| e.player != entry.player);
+    board.push(entry);
+    board.sort_by(|a, b| b.net.0.cmp(&a.net.0).then(b.hands.0.cmp(&a.hands.0)));
+    board.truncate(LEADERBOARD_SIZE);
+    near_sdk::env::storage_write(LEADERBOARD_KEY, &near_sdk::borsh::to_vec(&board).unwrap());
+}
+
 #[near(serializers = [json])]
 pub struct Stats {
     pub tables: u32,
@@ -84,6 +115,11 @@ impl Facedown {
             .filter(|&n| n > 0)
             .filter_map(|n| self.history.get(&format!("{table}:{n}")).cloned())
             .collect()
+    }
+
+    /// Top 20 human players by net chips won at the tables.
+    pub fn leaderboard(&self) -> Vec<LeaderEntry> {
+        read_leaderboard()
     }
 
     pub fn dealer_config(&self) -> DealerConfig {
