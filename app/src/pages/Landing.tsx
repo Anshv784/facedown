@@ -233,35 +233,37 @@ function HeroTable({ tables }: { tables: TableSummary[] | null }) {
   const now = useNowTick();
   return (
     <div className="l-hero-table">
-      <div className="l-device panel">
-        <div className="l-device-bar">
-          <span className="l-dots">
-            <i />
-            <i />
-            <i />
-          </span>
-          <span className="mono faint">{table ? `${table.name} · ${table.hand ? `hand #${table.hand.no} live` : "between hands"}` : "connecting…"}</span>
-        </div>
-        {table ? (
-          <Link to={`/t/${table.id}`} aria-label={`Watch ${table.name}`}>
-            <Stage table={table} hand={table.hand} result={null} me={null} myCards={null} now={now} origin={0} canSit={false} onSit={() => {}} />
+      <div className="l-live-label">
+        <span className={`live-dot ${table?.hand ? "on" : ""}`}>
+          {table ? (table.hand ? `Live now · ${table.name} · hand #${table.hand.no}` : `${table.name} · between hands`) : "Connecting to NEAR testnet…"}
+        </span>
+        {table && (
+          <Link to={`/t/${table.id}`} className="faint" style={{ fontSize: 13.5 }}>
+            Watch →
           </Link>
-        ) : (
-          <div style={{ aspectRatio: "1.72" }} />
         )}
       </div>
-      <div className="l-pin" style={{ left: "-4%", top: "18%" }}>
-        <b>Face down to everyone</b>
-        <span>Sealed to each player's own key</span>
-      </div>
-      <div className="l-pin" style={{ right: "-3%", top: "46%" }}>
-        <b>Dealt in an enclave</b>
-        <span>OutLayer TEE · VRF randomness</span>
-      </div>
-      <div className="l-pin" style={{ left: "8%", bottom: "-5%" }}>
-        <b>Audited before payout</b>
-        <span>The contract rebuilds the deck</span>
-      </div>
+      {table ? (
+        <Link to={`/t/${table.id}`} aria-label={`Watch ${table.name}`} className="l-stage">
+          <Stage table={table} hand={table.hand} result={null} me={null} myCards={null} now={now} origin={0} canSit={false} onSit={() => {}} />
+        </Link>
+      ) : (
+        <div className="l-stage" style={{ aspectRatio: "1.45" }} />
+      )}
+      <ul className="l-facts">
+        <li>
+          <b>Face down to everyone</b>
+          <span>Each player's cards are sealed to their own key</span>
+        </li>
+        <li>
+          <b>Dealt in an enclave</b>
+          <span>OutLayer TEE, randomness from a VRF</span>
+        </li>
+        <li>
+          <b>Audited before payout</b>
+          <span>The contract rebuilds the deck</span>
+        </li>
+      </ul>
     </div>
   );
 }
